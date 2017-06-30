@@ -3,7 +3,7 @@ var playerList = [];
 var playerID = 1000;
 var zoom = 1;
 var quadr;
-specmode = false;
+var specmode = false;
 var bola = new Bola();
 var xadjust = 0;
 var yadjust = 0;
@@ -42,6 +42,8 @@ function setup() {
       for (var i = 0; i < onlinePlayers; i++) {
         playerList[i].x = trespa[i].x;
         playerList[i].y = trespa[i].y;
+        playerList[i].width = trespa[i].width;
+        playerList[i].height = trespa[i].height;
       }
     }
   });
@@ -62,21 +64,29 @@ function draw() {
     fill(random(0,255), random(0,255), random(0,255));
     text('spectating', windowWidth/2, windowHeight/2);
   }
-  socket.emit('request');
+  socket.emit('request', playerID);
 }
 
 
 function Player(){
-  this.x = -100;
-  this.y = -100;
+  this.x = -1000;
+  this.y = -1000;
+  this.width = 10;
+  this.height = 10;
+  this.centerHitboxX = 10;
+  this.centerHitboxY = 10;
 
   this.draw = function() {
+    //draw hitbox
+    // fill(0);
+    // rect(this.x+xadjust, this.y+yadjust, this.width, this.height);
+    //------------
     fill(0,0,0,50);
-    rect(this.x +xadjust,this.y-2+yadjust, -7, 14);
-    fill(19, 164, 190);
-    rect(this.x+xadjust, this.y+yadjust, 7, 14);
+    rect(this.x +xadjust +this.centerHitboxX,this.y+yadjust+this.centerHitboxY, -7, 14);
+    fill(19*playerID, 164, 190*playerID);
+    rect(this.x+xadjust+this.centerHitboxX, this.y+yadjust+this.centerHitboxY, 7, 14);
     fill(105, 46, 10);
-    rect(this.x+xadjust, this.y+4+yadjust, 7, 5);
+    rect(this.x+xadjust+this.centerHitboxX, this.y+4+yadjust+this.centerHitboxY, 7, 5);
 
   }
 }

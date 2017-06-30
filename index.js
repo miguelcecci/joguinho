@@ -12,6 +12,7 @@ var socket = require('socket.io');
 var io = socket(server);
 io.sockets.on('connection', newConnection);
 ///////////////////////////////////
+var verify = [];
 var playerArray = [];
 var onlinePlayers = 0;
 var ball;
@@ -22,6 +23,7 @@ function newConnection(socket){
 		console.log('New Player Online, socket connection: ' + socket.id);
 		ball = new Ball();
 		playerArray[onlinePlayers] = new Player();
+		verify[onlinePlayers] = 0;
 		socket.emit('new-player', onlinePlayers);
 		onlinePlayers++;
 	}else {
@@ -30,8 +32,11 @@ function newConnection(socket){
 	}
   socket.on('joystick-mv-vert', movev);
   socket.on('joystick-mv-horz', moveh);
-	socket.on('request', function() {
-		ballmove();
+	socket.on('request', function(id) {
+		if(id != 1000){
+			ballmove();
+		}
+		verify[id] = 0;
 		socket.emit('ball', ball);
 		socket.emit('update', playerArray, onlinePlayers);
 	});
@@ -43,13 +48,21 @@ function ballmove(){
 			if(playerArray[i].x<ball.x && playerArray[i].y<ball.y){
 				if(playerArray[i].x+playerArray[i].width>ball.x){
 					if(playerArray[i].y+playerArray[i].height>ball.y){
-						ball.speedX = -1*ball.speedX*(Math.random());
-						ball.speedY = Math.random()-Math.random();
+						ball.speedX = 2*(-1*ball.speedX*(Math.random()));
+						ball.speedY = (ball.y-playerArray[i].y-15)/20;
 						lastouch = i;
 					}
 				}
 			}
 		}
+	}
+	if(ball.x>1300){
+		ball.x = 650;
+		ball.y = 500;
+	}
+	if(ball.x<0 ){
+		ball.x = 650;
+		ball.y = 500;
 	}
 	ball.x = ball.x+ball.speedX;
 	ball.y = ball.y+ball.speedY;
@@ -58,14 +71,14 @@ function ballmove(){
 function Player(){
   this.x = 500*(onlinePlayers+1);
   this.y = 500;
-	this.width = 100;
-	this.height = 100;
+	this.width = 30;
+	this.height = 30;
 }
 
 function Ball(){
 	this.x = 200;
 	this.y = 555;
-	this.speedX = 3;
+	this.speedX = 2;
 	this.speedY = 0;
 }
 
