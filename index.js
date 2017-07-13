@@ -12,8 +12,10 @@ var socket = require('socket.io');
 var io = socket(server);
 io.sockets.on('connection', newConnection);
 ///////////////////////////////////
-var verify = [];
 var playerArray = [];
+for (var i = 0; i < 2; i++) {
+	playerArray[i] = 0;
+}
 var onlinePlayers = 0;
 var ball;
 var lastouch = 100; //guarda o id do ultimo player a tocar na bola
@@ -22,9 +24,13 @@ function newConnection(socket){
 	if(onlinePlayers <= 1){
 		console.log('New Player Online, socket connection: ' + socket.id);
 		ball = new Ball();
-		playerArray[onlinePlayers] = new Player();
-		verify[onlinePlayers] = 0;
-		socket.emit('new-player', onlinePlayers);
+		for(i=0; i<=playerArray.length; i++){
+			if(playerArray[i] == 0){
+				playerArray[i] = new Player(socket.id, i);
+				socket.emit('new-player', i);
+				break;
+			}
+		}
 		onlinePlayers++;
 	}else {
 		console.log("Rom is full");
@@ -32,25 +38,37 @@ function newConnection(socket){
 	}
   socket.on('joystick-mv-vert', movev);
   socket.on('joystick-mv-horz', moveh);
+	socket.on('disconnect', function(){
+		console.log('desconectado', socket.id);
+		for (var i = 0; i < playerArray.length; i++) {
+			if(playerArray[i] != 0){
+				if(playerArray[i].id == socket.id){
+					playerArray[i] = 0;
+				}
+			}
+		}
+		onlinePlayers--;
+	});
 	socket.on('request', function(id) {
 		if(id != 1000){
 			ballmove();
 		}
-		verify[id] = 0;
 		socket.emit('ball', ball);
-		socket.emit('update', playerArray, onlinePlayers);
+		socket.emit('update', playerArray, playerArray.length);
 	});
 }
 
 function ballmove(){
-	for (var i = 0; i < onlinePlayers; i++) {
-		if(lastouch != i){
-			if(playerArray[i].x<ball.x && playerArray[i].y<ball.y){
-				if(playerArray[i].x+playerArray[i].width>ball.x){
-					if(playerArray[i].y+playerArray[i].height>ball.y){
-						ball.speedX = 2*(-1*ball.speedX*(Math.random()));
-						ball.speedY = (ball.y-playerArray[i].y-15)/20;
-						lastouch = i;
+	for (var i = 0; i < playerArray.length; i++) {
+		if(playerArray[i] != 0){
+			if(lastouch != i){
+				if(playerArray[i].x<ball.x && playerArray[i].y<ball.y){
+					if(playerArray[i].x+playerArray[i].width>ball.x){
+						if(playerArray[i].y+playerArray[i].height>ball.y){
+							ball.speedX = -1*(ball.speedX+ball.speed*0.2);
+							ball.speedY = (ball.y-playerArray[i].y-15)/20;
+							lastouch = i;
+						}
 					}
 				}
 			}
@@ -68,9 +86,10 @@ function ballmove(){
 	ball.y = ball.y+ball.speedY;
 }
 
-function Player(){
-  this.x = 500*(onlinePlayers+1);
-  this.y = 500;
+function Player(id, playerNumber){
+	this.id = id;
+  this.x = 400+700*playerNumber;
+  this.y = 300;
 	this.width = 30;
 	this.height = 30;
 }
@@ -89,7 +108,4 @@ function movev(player, vy) {
 	playerArray[player].y += 5*vy;
 }
 
-function test() {
-  console.log(playerArray[onlinePlayers].x);
-}
 /////////JOYSTICK/////////

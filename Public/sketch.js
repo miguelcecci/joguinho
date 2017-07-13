@@ -8,11 +8,11 @@ var bola = new Bola();
 var xadjust = 0;
 var yadjust = 0;
 
-for (var i = 0; i < 2; i++) {
-  playerList[i] = new Player();
-}
 
 function setup() {
+  for (var i = 0; i < 2; i++) {
+    playerList[i] = new Player();
+  }
   createCanvas(windowWidth, windowHeight);
   socket = io.connect();
   background(55,0,30);
@@ -54,6 +54,7 @@ function draw() {
   background(100, 200, 50);
   quadr.draw();
   bola.draw();
+  text('Sneaker Tennis BETA', 3, 10);
   for (var i = 0; i < playerList.length; i++) {
     playerList[i].draw();
   }
@@ -75,6 +76,7 @@ function Player(){
   this.height = 10;
   this.centerHitboxX = 10;
   this.centerHitboxY = 10;
+  this.shirtcolor = {r:random(0,255), g:random(0,155), b:random(0,255)};
 
   this.draw = function() {
     //draw hitbox
@@ -83,7 +85,7 @@ function Player(){
     //------------
     fill(0,0,0,50);
     rect(this.x +xadjust +this.centerHitboxX,this.y+yadjust+this.centerHitboxY, -7, 14);
-    fill(19*playerID, 164, 190*playerID);
+    fill(this.shirtcolor.r, this.shirtcolor.g, this.shirtcolor.b);
     rect(this.x+xadjust+this.centerHitboxX, this.y+yadjust+this.centerHitboxY, 7, 14);
     fill(105, 46, 10);
     rect(this.x+xadjust+this.centerHitboxX, this.y+4+yadjust+this.centerHitboxY, 7, 5);
@@ -120,7 +122,7 @@ function Bola(){
 
   this.draw = function() {
     fill(255, 255, 50);
-    rect(this.x+xadjust, this.y+yadjust, 6, 6);
+    rect(this.x+xadjust-3, this.y+yadjust-3, 5, 5);//-3 serve para centralizar a bola
   }
 }
 
